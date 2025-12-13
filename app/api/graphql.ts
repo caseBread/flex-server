@@ -39,6 +39,11 @@ function extractBearer(auth?: string) {
 }
 
 export default async function handler(req: AuthedReq, res: NextApiResponse) {
+  res.setHeader("Access-Control-Allow-Origin", "http://localhost:3000");
+  res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "*");
+  res.setHeader("Access-Control-Allow-Credentials", "true");
+
   // ✅ APQ hash-only GET 처리 (그대로 유지)
   const hasQueryString =
     typeof req.query.query === "string" && req.query.query.length > 0;
