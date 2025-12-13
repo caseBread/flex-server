@@ -1,12 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import jwt from "jsonwebtoken";
 
-export default function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== "POST") {
-    res.setHeader("Allow", ["POST"]);
-    return res.status(405).end("Method Not Allowed");
-  }
-
+export default function POST(req: NextApiRequest, res: NextApiResponse) {
   const { token } = req.body;
 
   if (!token) {
