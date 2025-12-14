@@ -1,7 +1,7 @@
 // pages/api/_utils/auth.ts
 import type { NextApiRequest, NextApiResponse } from "next";
 import Cors from "cors";
-import { verifyToken } from "../token/refresh-token";
+import { verifyToken } from "../pages/api/token/refresh-token";
 
 export type AuthedReq = NextApiRequest & { user?: any };
 

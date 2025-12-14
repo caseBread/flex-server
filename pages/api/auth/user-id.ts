@@ -1,6 +1,6 @@
 // pages/api/auth/user-id.ts
 import type { NextApiResponse } from "next";
-import { applyCorsAndAuth, AuthedReq } from "../_utils/auth";
+import { applyCorsAndAuth, AuthedReq } from "../../../utils/auth";
 
 export default async function handler(req: AuthedReq, res: NextApiResponse) {
   try {
