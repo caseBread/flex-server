@@ -6,7 +6,10 @@ import { verifyToken } from "./token/refresh-token";
 // Initializing the cors middleware
 // You can read more about the available options here: https://github.com/expressjs/cors#configuration-options
 const cors = Cors({
-  methods: ["POST", "GET", "HEAD"],
+  origin: true,
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true,
 });
 
 // Helper method to wait for a middleware to execute before continuing
