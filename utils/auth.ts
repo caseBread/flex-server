@@ -8,7 +8,6 @@ export type AuthedReq = NextApiRequest & { user?: any };
 const cors = Cors({
   origin: true,
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD"],
-  allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
 });
 
