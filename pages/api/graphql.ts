@@ -3,8 +3,6 @@ import { createSchema, createYoga } from "graphql-yoga";
 import Cors from "cors";
 import { verifyToken } from "./token/refresh-token";
 
-// Initializing the cors middleware
-// You can read more about the available options here: https://github.com/expressjs/cors#configuration-options
 const cors = Cors({
   origin: true,
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD"],
@@ -12,15 +10,10 @@ const cors = Cors({
   credentials: true,
 });
 
-// Helper method to wait for a middleware to execute before continuing
-// And to throw an error when an error happens in a middleware
 function runMiddleware(req: NextApiRequest, res: NextApiResponse, fn: any) {
   return new Promise((resolve, reject) => {
     fn(req, res, (result: any) => {
-      if (result instanceof Error) {
-        return reject(result);
-      }
-
+      if (result instanceof Error) return reject(result);
       return resolve(result);
     });
   });
@@ -39,18 +32,42 @@ const yoga = createYoga<{
 }>({
   graphqlEndpoint: "/api/graphql",
   schema: createSchema({
-    typeDefs: `
-      type Query { test: TestResult! }
-      type TestResult { isLogined: Boolean! }
+    typeDefs: /* GraphQL */ `
+      type Query {
+        test: TestResult!
+      }
+
+      type TestResult {
+        isLogined: Boolean!
+        userId: ID
+        role: String
+      }
     `,
     resolvers: {
       Query: {
-        test: (_p, _a, ctx) => ({ isLogined: Boolean(ctx.user) }),
+        // test 객체는 항상 반환 (로그인 여부는 필드에서 판단)
+        test: (_p, _a, ctx) => ({ user: ctx.user }),
+      },
+
+      // ✅ 필드 단위 resolver로 이름을 정확히 맞춰서 제공
+      TestResult: {
+        isLogined: (parent) => Boolean(parent.user),
+
+        userId: (parent) => {
+          if (!parent.user) return null;
+          // 너 토큰 payload에 맞게 우선순위로 뽑음
+          return String(parent.user.userId ?? parent.user.sub ?? "");
+        },
+
+        role: (parent) => {
+          if (!parent.user) return null;
+          return String(parent.user.role ?? "user");
+        },
       },
     },
   }),
 
-  // ✅ context에서는 절대 throw하지 말고 user만 주입
+  // context에서는 throw하지 말고 user만 주입
   context: ({ req }) => {
     return { user: req.user ?? null };
   },
@@ -63,7 +80,6 @@ function extractBearer(auth?: string) {
 }
 
 export default async function handler(req: AuthedReq, res: NextApiResponse) {
-  // Run the middleware
   await runMiddleware(req, res, cors);
 
   // ✅ APQ hash-only GET 처리 (그대로 유지)
@@ -84,7 +100,6 @@ export default async function handler(req: AuthedReq, res: NextApiResponse) {
     });
   }
 
-  // ✅ 여기서 Authorization 검사해서 401을 “확정”해버림
   const token = extractBearer(req.headers.authorization);
 
   if (token) {
@@ -100,7 +115,6 @@ export default async function handler(req: AuthedReq, res: NextApiResponse) {
         .json({ message: "invalid or expired access token" });
     }
   }
-  // token이 없으면 미로그인: req.user 없음 → ctx.user null
 
   return yoga(req, res);
 }
